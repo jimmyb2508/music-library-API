@@ -1,10 +1,11 @@
 const Album = require('../models/album');
 
 exports.create = (req, res) => {
+  const { id } = req.params;
   const album = new Album({
     name: req.body.name,
     year: req.body.year,
-    artist: artistId,
+    artist: id,
   });
 
   if (!album.artist) {
@@ -14,4 +15,10 @@ exports.create = (req, res) => {
       res.status(201).json(album);
     });
   }
+};
+
+exports.list = (req, res) => {
+  Album.find().then(album => {
+    res.status(200).json(album);
+  });
 };

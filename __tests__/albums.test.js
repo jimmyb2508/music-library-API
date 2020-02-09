@@ -83,4 +83,36 @@ describe('/albums', () => {
         });
     });
   });
+
+  describe('with albums in the database', () => {
+    let albums;
+    beforeEach(done => {
+      Promise.all([
+        Album.create({ name: 'Innerspeaker', year: 2010 }),
+        Album.create({ name: 'The Number of the Beast', year: 1982 }),
+        Album.create({ name: 'Insomniac', year: 1995 }),
+      ]).then(documents => {
+        albums = documents;
+        done();
+      });
+    });
+
+    describe('GET /albums', () => {
+      it('gets all albums', done => {
+        request(app)
+          .get('/artists/:id/albums')
+          .then(res => {
+            expect(res.status).toBe(200);
+            expect(res.body.length).toBe(3);
+
+            res.body.forEach(album => {
+              const expected = albums.find(a => a._id.toString() === album._id);
+              expect(album.name).toBe(expected.name);
+              expect(album.year).toBe(expected.year);
+            });
+            done();
+          });
+      });
+    });
+  });
 });
