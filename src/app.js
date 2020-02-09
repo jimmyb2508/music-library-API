@@ -16,8 +16,4 @@ app.patch('/artists/:id', artistControllers.patch);
 
 app.delete('/artists/:id', artistControllers.delete);
 
-// app.get('*', (req, res) => {
-//   res.status(200).json({ message: 'Hello World!' });
-// });
-
 module.exports = app;

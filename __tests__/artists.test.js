@@ -115,7 +115,6 @@ describe('/artists', () => {
 
       it('updates artist name by id', done => {
         const artist = artists[0];
-        console.log(artist);
         request(app)
           .patch(`/artists/${artist._id}`)
           .send({ name: 'Nirvana' })
