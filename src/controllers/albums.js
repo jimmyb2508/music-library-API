@@ -1,24 +1,23 @@
 const Album = require('../models/album');
+const Artist = require('../models/artist');
 
 exports.create = (req, res) => {
-  const { id } = req.params;
-  const album = new Album({
-    name: req.body.name,
-    year: req.body.year,
-    artist: id,
+  Artist.findOne({ _id: req.params.id }, (err, artist) => {
+    if (!artist) {
+      res.status(404).json({ error: 'The artist could not be found.' });
+    } else {
+      const album = new Album({
+        name: req.body.name,
+        year: req.body.year,
+        artist: artist._id,
+      });
+      album.save().then(() => res.status(201).json(album));
+    }
   });
-
-  if (!album.artist) {
-    res.status(404).json({ error: 'The artist could not be found.' });
-  } else {
-    album.save().then(() => {
-      res.status(201).json(album);
-    });
-  }
 };
 
 exports.list = (req, res) => {
-  Album.find().then(album => {
-    res.status(200).json(album);
+  Albums.find().then(albums => {
+    res.status(200).json(albums);
   });
 };
