@@ -19,12 +19,18 @@ describe('Songs', () => {
   });
 
   beforeEach(done => {
-    Artist.create({ name: 'Tame Impala', genre: 'Rock' }, (_, artist) => {
+    Artist.create({ body: { name: 'Tame Impala', genre: 'Rock' } }, (_, artist) => {
+      console.log('artist', artist);
       artistId = artist._id.toString();
-      Album.create({ name: 'InnerSpeaker', year: 2010, artist: artistId }, (__, album) => {
-        albumId = album._id.toString();
-        done();
-      });
+      console.log('artistId', artistId);
+      Album.create(
+        { body: { name: 'InnerSpeaker', year: 2010 }, params: { artistId } },
+        (__, album) => {
+          console.log('ALBUM', album);
+          albumId = album._id.toString();
+          done();
+        },
+      );
     });
   });
 
@@ -44,18 +50,21 @@ describe('Songs', () => {
   });
 
   describe('POST /album/:albumId/song', () => {
-    xit('creates a new song under an album', done => {
+    it('creates a new song under an album', done => {
       request(app)
         .post(`/album/${albumId}/song`)
         .send({
           artistId,
           name: 'Solitude Is Bliss',
+          year: 2010,
         })
         .then(res => {
-          expect(res.status).toBe(200);
+          expect(res.status).toBe(201);
+          console.log('ROMY', res.body);
           const songId = res.body._id;
           expect(res.body).toEqual({
             name: 'Solitude Is Bliss',
+            year: 2010,
             _id: songId,
             artist: {
               _id: artistId,

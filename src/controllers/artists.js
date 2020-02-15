@@ -5,7 +5,6 @@ exports.create = (req, res) => {
     name: req.body.name,
     genre: req.body.genre,
   });
-
   artist
     .save()
     .then(() => {
@@ -59,4 +58,3 @@ exports.delete = (req, res) => {
     }
   });
 };
-
