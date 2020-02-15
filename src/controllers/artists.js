@@ -23,7 +23,7 @@ exports.list = (req, res) => {
 };
 
 exports.find = (req, res) => {
-  Artist.findOne({ _id: req.params.id }, (err, artist) => {
+  Artist.findOne({ _id: req.params.artistId }, (err, artist) => {
     if (!artist) {
       res.status(404).json({ error: 'The artist could not be found.' });
     } else {
@@ -33,7 +33,7 @@ exports.find = (req, res) => {
 };
 
 exports.patch = (req, res) => {
-  Artist.findOne({ _id: req.params.id }, (err, artist) => {
+  Artist.findOne({ _id: req.params.artistId }, (err, artist) => {
     if (!artist) {
       res.status(404).json({ error: 'The artist could not be found.' });
     } else {
@@ -51,7 +51,7 @@ exports.patch = (req, res) => {
 };
 
 exports.delete = (req, res) => {
-  Artist.findByIdAndRemove({ _id: req.params.id }, (err, artist) => {
+  Artist.findByIdAndRemove({ _id: req.params.artistId }, (err, artist) => {
     if (!artist) {
       res.status(404).json({ error: 'The artist could not be found.' });
     } else {

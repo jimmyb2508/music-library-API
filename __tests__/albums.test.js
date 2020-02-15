@@ -87,30 +87,72 @@ describe('/albums', () => {
   describe('with albums in the database', () => {
     let albums;
     beforeEach(done => {
-      Promise.all([
-        Album.create({ name: 'Innerspeaker', year: 2010 }),
-        Album.create({ name: 'The Number of the Beast', year: 1982 }),
-        Album.create({ name: 'Insomniac', year: 1995 }),
-      ]).then(documents => {
+      Promise.all([Album.create({ name: 'Innerspeaker', year: 2010 })]).then(documents => {
         albums = documents;
         done();
       });
     });
 
     describe('GET /albums', () => {
-      xit('gets all albums', done => {
+      it('gets all albums', done => {
         request(app)
-          .get(`/artists/${artist._id}/albums`)
+          .get(`/albums`)
           .then(res => {
             expect(res.status).toBe(200);
-            expect(res.body.length).toBe(3);
+            expect(res.body.length).toBe(1);
+            expect(res.body.name).toBe(albums.name);
+            expect(res.body.year).toBe(albums.year);
+          });
+        done();
+      });
+    });
 
-            res.body.forEach(album => {
-              const expected = albums.find(a => a._id.toString() === album._id);
-              expect(album.name).toBe(expected.name);
-              expect(album.year).toBe(expected.year);
+    describe('GET /albums/:artistId/albums', () => {
+      it('gets all albums by artist id', done => {
+        request(app)
+          .get(`/artists/${artist._id}`)
+          .then(res => {
+            expect(res.status).toBe(200);
+            const result = [res.body];
+
+            result.forEach(album => {
+              expect(res.body.name).toBe(album.name);
+              expect(res.body.year).toBe(album.year);
             });
             done();
+          });
+      });
+    });
+
+    describe('PATCH /artists/:artistId/albums/:albumId', () => {
+      it('updates album data by :artistId', done => {
+        const album = albums[0];
+        const newAlbum = 'Nevermind';
+        request(app)
+          .patch(`/artists/${artist._id}/albums/${album._id}`)
+          .send({ name: newAlbum })
+          .then(res => {
+            expect(res.status).toBe(200);
+            Album.findById(album._id, (_, updatedAlbum) => {
+              expect(updatedAlbum.name).toBe('Nevermind');
+              done();
+            });
+          });
+      });
+    });
+
+    describe('DELETE /artists/:artistId/albums/:albumId', () => {
+      it('deletes album record by id', done => {
+        const album = albums[0];
+        request(app)
+          .delete(`/artists/${artist._id}/albums/${album._id}`)
+          .then(res => {
+            expect(res.status).toBe(204);
+            Album.findById(album._id, (error, deletedAlbum) => {
+              expect(error).toBe(null);
+              expect(deletedAlbum).toBe(null);
+              done();
+            });
           });
       });
     });

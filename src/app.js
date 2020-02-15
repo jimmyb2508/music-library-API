@@ -12,14 +12,20 @@ app.post('/artists', artistControllers.create);
 
 app.get('/artists', artistControllers.list);
 
-app.get('/artists/:id', artistControllers.find);
+app.get('/artists/:artistId', artistControllers.find);
 
-app.patch('/artists/:id', artistControllers.patch);
+app.patch('/artists/:artistId', artistControllers.patch);
 
-app.delete('/artists/:id', artistControllers.delete);
+app.delete('/artists/:artistId', artistControllers.delete);
 
-app.post('/artists/:id/albums', albumControllers.create);
+app.post('/artists/:artistId/albums', albumControllers.create);
 
-app.get('/artists/:id/albums', albumControllers.list);
+app.get('/albums', albumControllers.list);
+
+app.get('/artists/:artistId/albums', albumControllers.find);
+
+app.patch('/artists/:artistId/albums/:albumId', albumControllers.patch);
+
+app.delete('/artists/:artistId/albums/:albumId', albumControllers.delete);
 
 module.exports = app;
