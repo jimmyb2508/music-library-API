@@ -30,6 +30,14 @@ app.patch('/artists/:artistId/albums/:albumId', albumControllers.patch);
 
 app.delete('/artists/:artistId/albums/:albumId', albumControllers.delete);
 
-app.post('/album/:albumId/song', songControllers.create);
+app.post('/albums/:albumId/songs', songControllers.create);
+
+app.get('/songs', songControllers.list);
+
+app.get('/songs/:songId', songControllers.find);
+
+app.patch('/songs/:songId', songControllers.patch);
+
+app.delete('/songs/:songId', songControllers.delete);
 
 module.exports = app;

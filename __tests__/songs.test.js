@@ -18,19 +18,13 @@ describe('Songs', () => {
     done();
   });
 
-  beforeEach(done => {
-    Artist.create({ body: { name: 'Tame Impala', genre: 'Rock' } }, (_, artist) => {
-      console.log('artist', artist);
+  beforeAll(done => {
+    Artist.create({ name: 'Tame Impala', genre: 'Rock' }, (_, artist) => {
       artistId = artist._id.toString();
-      console.log('artistId', artistId);
-      Album.create(
-        { body: { name: 'InnerSpeaker', year: 2010 }, params: { artistId } },
-        (__, album) => {
-          console.log('ALBUM', album);
-          albumId = album._id.toString();
-          done();
-        },
-      );
+      Album.create({ name: 'InnerSpeaker', year: 2010, artist: artistId }, (__, album) => {
+        albumId = album._id.toString();
+        done();
+      });
     });
   });
 
@@ -49,22 +43,20 @@ describe('Songs', () => {
     done();
   });
 
-  describe('POST /album/:albumId/song', () => {
+  describe('POST /albums/:albumId/songs', () => {
     it('creates a new song under an album', done => {
       request(app)
-        .post(`/album/${albumId}/song`)
+        .post(`/albums/${albumId}/songs`)
         .send({
-          artistId,
           name: 'Solitude Is Bliss',
-          year: 2010,
+          artist: artistId,
+          album: albumId,
         })
         .then(res => {
           expect(res.status).toBe(201);
-          console.log('ROMY', res.body);
           const songId = res.body._id;
           expect(res.body).toEqual({
             name: 'Solitude Is Bliss',
-            year: 2010,
             _id: songId,
             artist: {
               _id: artistId,
@@ -83,6 +75,101 @@ describe('Songs', () => {
           });
           done();
         });
+    });
+
+    it('returns a 404 and does not create an song if the album does not exist', done => {
+      request(app)
+        .post(`/albums/8654/songs`)
+        .send({
+          name: 'Solitude is Bliss',
+          artist: artistId,
+          album: albumId,
+        })
+        .then(res => {
+          expect(res.status).toBe(404);
+          expect(res.body.error).toBe('The album does not exist.');
+
+          Song.find({}, (err, songs) => {
+            expect(err).toBe(null);
+            expect(songs.length).toBe(0);
+            done();
+          });
+        });
+    });
+  });
+
+  describe('with songs in the database', () => {
+    let songs;
+    beforeEach(done => {
+      Promise.all([
+        Song.create({ name: 'Solitude is Bliss', album: artistId, artist: albumId }),
+      ]).then(documents => {
+        songs = documents;
+        done();
+      });
+    });
+
+    describe('GET /songs', () => {
+      it('gets all songs', done => {
+        request(app)
+          .get('/songs')
+          .then(res => {
+            expect(res.status).toBe(200);
+            expect(res.body.length).toBe(1);
+            expect(res.body.album).toBe(songs.album);
+            expect(res.body.artist).toBe(songs.artist);
+          });
+        done();
+      });
+    });
+
+    describe('GET /songs/5949', () => {
+      it('gets all songs by album id', done => {
+        request(app)
+          .get(`/songs/${songs[0]._id}`)
+          .then(res => {
+            expect(res.status).toBe(200);
+            const result = [res.body];
+
+            result.forEach(song => {
+              expect(res.body.name).toBe(song.name);
+              expect(res.body.year).toBe(song.year);
+            });
+            done();
+          });
+      });
+    });
+
+    describe('PATCH /songs/5934', () => {
+      it('updates song data by :songId', done => {
+        const newSong = 'Smells Like Teen Spirit';
+        request(app)
+          .patch(`/songs/${songs[0]._id}`)
+          .send({ name: newSong })
+          .then(res => {
+            expect(res.status).toBe(200);
+            Song.findById(songs[0]._id, (_, updatedSong) => {
+              expect(updatedSong.name).toBe('Smells Like Teen Spirit');
+              done();
+            });
+          });
+      });
+    });
+
+    describe('DELETE /songs/5920', () => {
+      it('deletes song record by id', done => {
+        const song = songs[0];
+        request(app)
+          .delete(`/songs/${songs[0]._id}`)
+          .then(res => {
+            expect(res.status).toBe(204);
+            Song.findById(song._id, (error, deletedSong) => {
+              expect(error).toBe(null);
+              expect(deletedSong).toBe(null);
+              done();
+            });
+          });
+      });
     });
   });
 });
